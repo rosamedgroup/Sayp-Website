@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Logo from './Logo';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
+  const visibleSections = useRef(new Map<string, boolean>());
 
   const navItems = useMemo(() => [
     { label: 'نبذة عنا', id: 'about' },
@@ -57,36 +58,51 @@ const Header: React.FC = () => {
     };
   }, [isMenuOpen]);
   
-  // Effect to handle active section on scroll
-  const handleScroll = useCallback(() => {
-    // Offset is slightly more than header height to ensure the title is visible before highlighting
-    const scrollPosition = window.scrollY + 80;
-
-    let currentSection = '';
-    // Find the last section that is above the scroll position
-    for (const item of navItems) {
-      const element = document.getElementById(item.id);
-      if (element && element.offsetTop <= scrollPosition) {
-        currentSection = item.id;
-      }
-    }
-
-    // A special check for the very bottom of the page to ensure 'contact' is active
-    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50) {
-      currentSection = 'contact';
-    }
-
-    setActiveSection(currentSection);
-  }, [navItems]);
-
+  // Effect to handle active section highlighting using IntersectionObserver
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Initial check on load
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Update the visibility map based on intersection status
+        entries.forEach((entry) => {
+          visibleSections.current.set(entry.target.id, entry.isIntersecting);
+        });
 
+        // Determine the current active section by finding the last visible one
+        const navIds = navItems.map((item) => item.id);
+        let currentActive = '';
+        for (let i = navIds.length - 1; i >= 0; i--) {
+          const id = navIds[i];
+          if (visibleSections.current.get(id)) {
+            currentActive = id;
+            break; // Found the last visible section, which is the active one
+          }
+        }
+        setActiveSection(currentActive);
+      },
+      {
+        // Offset the observation area by the height of the sticky header.
+        // An element is considered "visible" if it enters the viewport below this top margin.
+        rootMargin: `-65px 0px 0px 0px`,
+        threshold: 0,
+      }
+    );
+
+    const sections = navItems.map(({ id }) => document.getElementById(id));
+    sections.forEach((section) => {
+      if (section) {
+        observer.observe(section);
+      }
+    });
+
+    // Cleanup: disconnect the observer when the component unmounts
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      sections.forEach((section) => {
+        if (section) {
+          observer.unobserve(section);
+        }
+      });
     };
-  }, [handleScroll]);
+  }, [navItems]);
 
   return (
     <>
