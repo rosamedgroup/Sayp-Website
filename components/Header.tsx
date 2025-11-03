@@ -142,22 +142,30 @@ const Header: React.FC = () => {
         <div className="h-px bg-[#6B5050]/20 w-full" />
       </header>
       
+      {/* Mobile Menu Overlay */}
       <div
         className={`fixed inset-0 z-40 bg-[#CAD4D3] transition-opacity duration-300 ease-in-out md:hidden ${
           isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         aria-hidden={!isMenuOpen}
       >
-        <nav className="h-full flex flex-col justify-center items-center space-y-8">
-          {navItems.map((item) => (
-            <button
+        <nav className="h-full flex flex-col justify-center items-center space-y-6">
+          {navItems.map((item, index) => (
+            <div
               key={item.id}
-              onClick={() => scrollToSection(item.id)}
-              className="relative group text-2xl font-medium text-[#6B5050] transition-colors duration-300 pb-2"
+              className={`transform transition-all duration-300 ease-in-out ${
+                isMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+              }`}
+              style={{ transitionDelay: `${isMenuOpen ? 75 + index * 50 : 0}ms` }}
             >
-              <span>{item.label}</span>
-              <span className={`absolute bottom-0 left-0 h-px bg-[#6B5050] transition-all duration-300 ease-in-out ${activeSection === item.id ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
-            </button>
+              <button
+                onClick={() => scrollToSection(item.id)}
+                className="relative group text-xl font-medium text-[#6B5050] transition-colors duration-300 pb-2"
+              >
+                <span>{item.label}</span>
+                <span className={`absolute bottom-0 left-0 h-px bg-[#6B5050] transition-all duration-300 ease-in-out ${activeSection === item.id ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
+              </button>
+            </div>
           ))}
         </nav>
       </div>
