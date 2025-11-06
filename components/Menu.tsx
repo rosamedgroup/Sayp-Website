@@ -129,7 +129,9 @@ const Menu: React.FC = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="max-w-3xl mx-auto bg-[#F1ECE6]/50 rounded-lg p-6 sm:p-8"
+        <div
+            key={activeTab}
+            className="max-w-3xl mx-auto bg-[#F1ECE6]/50 rounded-lg p-6 sm:p-8 menu-panel-enter"
             id={`panel-${activeTab}`}
             role="tabpanel"
             aria-labelledby={`tab-${activeTab}`}
