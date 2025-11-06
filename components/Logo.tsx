@@ -1,5 +1,4 @@
 import React from 'react';
-import Icon from './Icon';
 
 interface LogoProps {
   className?: string;
@@ -7,11 +6,23 @@ interface LogoProps {
 }
 
 const Logo: React.FC<LogoProps> = ({ className, variant = 'default' }) => {
-  const colorClass = variant === 'light' ? 'text-[#F1ECE6]' : 'text-[#6B5050]';
+  const logoUrl = 'https://storage.googleapis.com/aistudio-program-assets/website-assets/sip-cafe/logo-dark.png';
+  
+  const style: React.CSSProperties = {};
+  if (variant === 'light') {
+    // This CSS filter makes the dark brown logo appear as a light, off-white color.
+    // brightness(0) makes it black, invert(1) makes it white. opacity(0.9) softens the result.
+    style.filter = 'brightness(0) invert(1) opacity(0.9)'; 
+  }
   
   return (
-    <div className={className} role="img" aria-label="شعار مقهى سَيْب">
-      <Icon className={`w-full h-full ${colorClass}`} />
+    <div className={className}>
+       <img 
+        src={logoUrl} 
+        alt="شعار مقهى سَيْب" 
+        className="w-full h-full object-contain"
+        style={style}
+      />
     </div>
   );
 };

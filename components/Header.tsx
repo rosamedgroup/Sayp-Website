@@ -5,6 +5,8 @@ const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
   const visibleSections = useRef(new Map<string, boolean>());
+  const headerRef = useRef<HTMLElement>(null);
+  const [headerHeight, setHeaderHeight] = useState(65);
 
   const navItems = useMemo(() => [
     { label: 'نبذة عنا', id: 'about' },
@@ -12,6 +14,18 @@ const Header: React.FC = () => {
     { label: 'المعرض', id: 'gallery' },
     { label: 'موقعنا', id: 'contact' },
   ], []);
+
+  // Effect to measure header height dynamically
+  useEffect(() => {
+    const updateHeaderHeight = () => {
+      if (headerRef.current) {
+        setHeaderHeight(headerRef.current.offsetHeight);
+      }
+    };
+    updateHeaderHeight(); // Initial measurement
+    window.addEventListener('resize', updateHeaderHeight); // Update on resize
+    return () => window.removeEventListener('resize', updateHeaderHeight);
+  }, []);
 
   // Custom smooth scroll function with duration and offset
   const smoothScroll = (id: string, duration: number, offset: number) => {
@@ -42,7 +56,7 @@ const Header: React.FC = () => {
   };
 
   const scrollToSection = (id: string) => {
-    smoothScroll(id, 800, 65); // 800ms duration, 65px offset for sticky header
+    smoothScroll(id, 800, headerHeight); // Use dynamic headerHeight as offset
     setIsMenuOpen(false); // Close menu on navigation
   };
 
@@ -60,6 +74,8 @@ const Header: React.FC = () => {
   
   // Effect to handle active section highlighting using IntersectionObserver
   useEffect(() => {
+    if (headerHeight === 0) return; // Don't run observer until height is measured
+
     const observer = new IntersectionObserver(
       (entries) => {
         // Update the visibility map based on intersection status
@@ -82,7 +98,7 @@ const Header: React.FC = () => {
       {
         // Offset the observation area by the height of the sticky header.
         // An element is considered "visible" if it enters the viewport below this top margin.
-        rootMargin: `-65px 0px 0px 0px`,
+        rootMargin: `-${headerHeight}px 0px 0px 0px`,
         threshold: 0,
       }
     );
@@ -102,11 +118,11 @@ const Header: React.FC = () => {
         }
       });
     };
-  }, [navItems]);
+  }, [navItems, headerHeight]); // Re-run effect if header height changes
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-[#CAD4D3]/80 backdrop-blur-md">
+      <header ref={headerRef} className="sticky top-0 z-50 bg-[#CAD4D3]/80 backdrop-blur-md">
         <div className="container mx-auto px-6 py-3 flex justify-between items-center h-[65px]">
           <div className="w-24">
             <button onClick={() => smoothScroll('root', 800, 0)} aria-label="الصفحة الرئيسية لمقهى سَيْب">
